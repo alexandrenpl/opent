@@ -31,19 +31,19 @@ print("'Channel': "+contrast);
 
 title = getTitle();
 print("Image title: "+title);
-
+run("Synchronize Windows");
 // This macro assumes images opened are 8 or 16bit gray levels; RGB images must be split/converted before. 
 
 //Do a reslice and play the sinogram movie
-run("Reslice [/]...", "output=0.005 start=Left avoid");
-resl = getTitle();
-run("Animation Options...", "speed=27");
-doCommand("Start Animation [\\]");
-run("Tile");
-beep();
-waitForUser("Please check if the sinogram is OK.\nIf it's not, consider re-acquiring the sample");
-close(resl);
-run("Collect Garbage"); //clears RAM
+//run("Reslice [/]...", "output=0.005 start=Left avoid");
+//resl = getTitle();
+//run("Animation Options...", "speed=27");
+//doCommand("Start Animation [\\]");
+//run("Tile");
+//beep();
+//waitForUser("Please check if the sinogram is OK.\nIf it's not, consider re-acquiring the sample");
+//close(resl);
+//run("Collect Garbage"); //clears RAM
 
 // Starts by removing outliers to avoid ringing artifacts in final reconstruction
 // selects pixels on a frame at the edge of image to estimate background, set as background gray level 
@@ -74,8 +74,10 @@ makeLine(width/2, height*0.05, width/2, height*0.95);  // draws midline (shoudl 
 // THIS WAS TESTED AT THE LAST STEP BEFORE NRECON, BUT MAY BE APPLICABLE IN OTHER 
 // MAY NEED TO MAKE AN ASSESSMENT OF THE IDEAL ROLLING BAL SIZE, BUT WORKS WELL WITH THIS IN THE NEW CONFIG
 run("Subtract Background...", "rolling=300 sliding stack");
+
 //MAY NEED TO CHANGE RADIUS BETWEEN 3-5 DEPENDIN ON ACTUAL RESOLTION OF THE ACQUIRED DATASET
 run("Unsharp Mask...", "radius=5 mask=0.75 stack");
+
 //THE BgSubt puts different backgrounds on different projections, ideally it would be a polynomail fit done in the very beggining. but was no ytyet able to implement the ideal!
 // and this will cause edge/star artifacts during the reconstruction. to avoid it we need to re-normalize the images. Bleach correction does not work. contrast enhacment was the best (though not ideal)
 run("Enhance Contrast...", "saturated=0 normalize process_all");
@@ -190,6 +192,8 @@ ImageTwo=getTitle();
 
 run("Flip Horizontally", ImageTwo);
 run("Merge Channels...", "c2="+ImageOne+" c6="+ImageTwo+" create");
+selectWindow("Composite");
+rename("ImageThree");
 HalfMergeImage=getTitle();
 
 selectWindow(title);
@@ -203,22 +207,26 @@ rename("ImageTwo");
 ImageTwo=getTitle();
 
 run("Merge Channels...", "c1="+ImageOne+" c5="+ImageTwo+" create");
+selectWindow("Composite");
+rename("ImageFour");
 FullMergeImage=getTitle();
 
 run("Tile");
-beep();
 waitForUser("Check alignment\nFirst window is stack\nsecond window is slices 0 and 180\nthird window is 0 and 360");
+selectWindow(HalfMergeImage);
 close(HalfMergeImage);
+selectWindow(FullMergeImage);
 close(FullMergeImage);
 
 
 // Query to apply "log" to gray levels then scale to 16bit
 query = getBoolean("Wish to apply a 'log' function to the \nprojections to enhance dimer pixels?");
 if (query == true) {
+selectWindow(title);
 run("32-bit");
 run("Log", "stack");
 Stack.getStatistics(voxelCount, mean, min, max, stdDev);
-setMinAndMax(min-1, max+1); //to avoid pixel saturation
+setMinAndMax(min, max+1); //to avoid pixel saturation
 };
 
 // Query to invert stack if dark-field/fluorescence (NRecon requires absorptive projectional images)
@@ -254,6 +262,7 @@ close("STD_"+title);
 //saving corrected projections in new folder
 chosendir = getDirectory("Choose a Directory to save the processed projectional dataset");
 fs = File.separator;
+contrast = "GreenFluor";
 save_dir = chosendir+"OPTrecon_"+contrast+fs;
 File.makeDirectory(save_dir);
 print("Image save folder:" +save_dir);
