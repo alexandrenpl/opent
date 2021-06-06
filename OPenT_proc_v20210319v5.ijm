@@ -1,5 +1,5 @@
 /*
- * OPenT_proc v2021.03. v4  
+ * OPenT_proc v2021.03. v5.3  
  * ImageJ macro to pre-process OPenT "raw" projection datasets  
  * created by Gaby G Martins and Nuno P Martins @ Instituto Gulbenkian de Ciência, Oeiras - Portugal
  * For more info on building an OPenT or the latest version of this macro check http://opent.tech/
@@ -73,14 +73,33 @@ makeLine(width/2, height*0.05, width/2, height*0.95);  // draws midline (shoudl 
 // PART TO ADD TO MACRO TO REDUCE BACKGROUNG, FUZZYNESS AND INCREASE CONTRAST AND RESOLUTION
 // THIS WAS TESTED AT THE LAST STEP BEFORE NRECON, BUT MAY BE APPLICABLE IN OTHER 
 // MAY NEED TO MAKE AN ASSESSMENT OF THE IDEAL ROLLING BAL SIZE, BUT WORKS WELL WITH THIS IN THE NEW CONFIG
-run("Subtract Background...", "rolling=300 sliding stack");
+
+// Query to apply the reduce background
+query = getBoolean("Do you want to reduce background, fuzyness and increase contrast and resolution?");
+if (query == true) {
+	run("Subtract Background...", "rolling=300 sliding stack");
+};
 
 //MAY NEED TO CHANGE RADIUS BETWEEN 3-5 DEPENDIN ON ACTUAL RESOLTION OF THE ACQUIRED DATASET
-run("Unsharp Mask...", "radius=5 mask=0.75 stack");
+radiiz=5;
+Dialog.create("Unsharp Mask");
+Dialog.addMessage("Suggested values 3 to 5; -1 to skip");
+Dialog.addNumber("Mag. (x)", radiiz);
+Dialog.show();
 
-//THE BgSubt puts different backgrounds on different projections, ideally it would be a polynomail fit done in the very beggining. but was no ytyet able to implement the ideal!
+if (radiiz == -1) {
+
+};
+else {
+	run("Unsharp Mask...", "radius="+radiiz+" mask=0.75 stack");
+}
+
+//THE BgSubt puts different backgrounds on different projections, ideally it would be a polynomail fit done in the very beggining. but was not yet able to implement the ideal!
 // and this will cause edge/star artifacts during the reconstruction. to avoid it we need to re-normalize the images. Bleach correction does not work. contrast enhacment was the best (though not ideal)
-run("Enhance Contrast...", "saturated=0 normalize process_all");
+query = getBoolean("Do you want to enhance contrast?");
+if (query == true) {
+	run("Enhance Contrast...", "saturated=0 normalize process_all");
+}
 // study how to do this in CLIjrun("Synchronize Windows"); // 'syncwindows' is not macro compatible so the user needs to manually hit "Synchronize All" button!
 
 
