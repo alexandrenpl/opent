@@ -1,12 +1,12 @@
 /*
  * OPenT_proc v2021.03. v5.3  
  * ImageJ macro to pre-process OPenT "raw" projection datasets  
- * created by Gaby G Martins and Nuno P Martins @ Instituto Gulbenkian de Ciência, Oeiras - Portugal
+ * created by Gaby G Martins, Nuno P Martins and Alexandre Lopes @ Instituto Gulbenkian de Ciência, Oeiras - Portugal
  * For more info on building an OPenT or the latest version of this macro check http://opent.tech/
  * The macro opens a raw dataset, typically several TIFs or a stack of equally spaced angles over a full rotation 
- * and processes them in preparation for filtered backprojection reconstruction using eg, the NRecon tool
- * This macro corrects for sample tilt, centers FOV and cleans noisy pixels and saves a metadata *_.log file
- * There is also a routine in the end to retrieve the stack of reconstructed slices and post-process.
+ * and processes them in preparation for filtered back-projection reconstruction using eg, the NRecon tool
+ * This macro corrects for sample tilt, centres FOV cleans noisy pixels and saves a metadata *_.log file
+ * There is also a routine to retrieve the stack of reconstructed slices and post-process.
  * Send comments, bug reports or suggestions to gaby@igc.gulbenkian.pt
  */
 
@@ -45,8 +45,8 @@ run("Synchronize Windows");
 //close(resl);
 //run("Collect Garbage"); //clears RAM
 
-// Starts by removing outliers to avoid ringing artifacts in final reconstruction
-// selects pixels on a frame at the edge of image to estimate background, set as background gray level 
+// Starts by removing outliers to avoid ringing artefacts in the final reconstruction
+// selects pixels on a frame at the edge of the image to estimate the background, set as background gray level 
 run("Select All"); run("Enlarge...", "enlarge=-5"); run("Make Inverse");
 getStatistics(area, mean);
 setBackgroundColor(mean, mean, mean);
@@ -54,7 +54,7 @@ ThBright = mean/50;  // these values might need to be adjusted for each camera..
 ThDark = mean/20;    // these values might need to be adjusted for each camera...
 run("Select None");
 
-// ...or replace values for 'ThBright' and 'ThDark' with best value determined empirically
+// ...or replace values for 'ThBright' and 'ThDark' with the best value determined empirically
 run("Remove Outliers...", "radius=1 threshold="+ThBright+" which=Bright stack");
 run("Remove Outliers...", "radius=1 threshold="+ThDark+" which=Dark stack");
 
@@ -65,14 +65,14 @@ run("Rotate 90 Degrees Left");
 
 // FLAT-FIELD CORRECTION AND BACKGROUND SUBTRACTION ...UNDER CONSTRUCTION! look into Birk et al2012 polynomial fit 
 // This is tricky and inconsistent when samples are in agarose
-// the best is to optimize illumination and apply a log to gray levels
+//The best is to optimize illumination and apply a log to grey levels
 
-getDimensions(width, height, channels, slices, frames); //gets image widht and height
-makeLine(width/2, height*0.05, width/2, height*0.95);  // draws midline (shoudl coincide with axis of rot.)
+getDimensions(width, height, channels, slices, frames); //gets image width and height
+makeLine(width/2, height*0.05, width/2, height*0.95);  // draws midline (should coincide with the axis of rot.)
 
-// PART TO ADD TO MACRO TO REDUCE BACKGROUNG, FUZZYNESS AND INCREASE CONTRAST AND RESOLUTION
+// PART TO ADD TO MACRO TO REDUCE BACKGROUND, FUZZYNESS AND INCREASE CONTRAST AND RESOLUTION
 // THIS WAS TESTED AT THE LAST STEP BEFORE NRECON, BUT MAY BE APPLICABLE IN OTHER 
-// MAY NEED TO MAKE AN ASSESSMENT OF THE IDEAL ROLLING BAL SIZE, BUT WORKS WELL WITH THIS IN THE NEW CONFIG
+// MAY NEED TO MAKE AN ASSESSMENT OF THE IDEAL ROLLING BALL SIZE, BUT WORKS WELL WITH THIS IN THE NEW CONFIG
 
 // Query to apply the reduce background
 query = getBoolean("Do you want to reduce background, fuzyness and increase contrast and resolution?");
@@ -80,7 +80,7 @@ if (query == true) {
 	run("Subtract Background...", "rolling=300 sliding stack");
 };
 
-//MAY NEED TO CHANGE RADIUS BETWEEN 3-5 DEPENDIN ON ACTUAL RESOLTION OF THE ACQUIRED DATASET
+//MAY NEED TO CHANGE RADIUS BETWEEN 3-5 DEPENDING ON ACTUAL RESOLUTION OF THE ACQUIRED DATASET
 radiiz=5;
 Dialog.create("Unsharp Mask");
 Dialog.addMessage("Suggested values 3 to 5; -1 to skip");
@@ -94,13 +94,13 @@ else {
 	run("Unsharp Mask...", "radius="+radiiz+" mask=0.75 stack");
 }
 
-//THE BgSubt puts different backgrounds on different projections, ideally it would be a polynomail fit done in the very beggining. but was not yet able to implement the ideal!
-// and this will cause edge/star artifacts during the reconstruction. to avoid it we need to re-normalize the images. Bleach correction does not work. contrast enhacment was the best (though not ideal)
+//THE BgSubt puts different backgrounds on different projections, ideally, it would be a polynomial fit done in the very beginning. but was not yet able to implement the ideal!
+// and this will cause edge/star artifacts during the reconstruction. to avoid it we need to re-normalize the images. Bleach correction does not work. contrast enhancement was the best (though not ideal)
 query = getBoolean("Do you want to enhance contrast?");
 if (query == true) {
 	run("Enhance Contrast...", "saturated=0 normalize process_all");
 }
-// study how to do this in CLIjrun("Synchronize Windows"); // 'syncwindows' is not macro compatible so the user needs to manually hit "Synchronize All" button!
+// study how to do this in CLIjrun("Synchronize Windows"); // 'sync windows' is not macro compatible so the user needs to hit the "Synchronize All" button manually!
 
 
 // Prepare Z projections used to determine axis tilt + FOV center and crop (ROI)
@@ -178,7 +178,7 @@ run("Restore Selection");
 run("Tile");
 
 beep();
-waitForUser("Synchronize All! \nAdjust FOV bounding box to projection image(s). \nMove side handles until top/bottom handles coincide with axis of symmetry \nThen CTL+clik side handles to enlarge box symmetrically");
+waitForUser("Synchronize All! \nAdjust FOV bounding box to projection image(s). \nMove side handles until top/bottom handles coincide with the axis of symmetry \nThen CTL+clik side handles to enlarge box symmetrically");
 // resetting the display is not working...
 resetMinAndMax(); 
 
@@ -238,7 +238,7 @@ selectWindow(FullMergeImage);
 close(FullMergeImage);
 
 
-// Query to apply "log" to gray levels then scale to 16bit
+// Query to apply "log" to grey levels then scale to 16bit
 query = getBoolean("Wish to apply a 'log' function to the \nprojections to enhance dimer pixels?");
 if (query == true) {
 selectWindow(title);
@@ -255,7 +255,7 @@ if (query == true) {
 };
 run("16-bit"); setMinAndMax(0, 65535);
 
-// add to query possibility of top reslicing the proj dataset to present as sinograms for other FBP tools
+// add to query the possibility of top reslicing the project dataset to present as sinograms for other FBP tools
 // under construction 
 
 title=getTitle();
@@ -278,7 +278,7 @@ close("MAX_"+title);
 close("MIN_"+title);
 close("STD_"+title);
 
-//saving corrected projections in new folder
+//saving corrected projections in a new folder
 chosendir = getDirectory("Choose a Directory to save the processed projectional dataset");
 fs = File.separator;
 contrast = "GreenFluor";
@@ -287,7 +287,7 @@ File.makeDirectory(save_dir);
 print("Image save folder:" +save_dir);
 run("Image Sequence... ", "format=TIFF name=proj_ save=["+save_dir+"proj_0000.tif]");
 
-// dialog parameter initialization and creating a metadata 'proj_.log' file
+//dialogue parameter initialization and creating a metadata 'proj_.log' file
 date = "2021-xx-xx";
 height = getHeight();
 opt_axis = round(height/2);
@@ -352,7 +352,7 @@ print("Pre-processing Finished. If using NRecon, simply load 'proj_0000.TIF' fil
 beep();
 waitForUser("Now switch to NRecon or other tool and reconstruct the optical slices;\n(in NRecon simply open the file 'proj_0000.tif'...). After reconstruction \nclick OK here to post-process the 3D stack or 'Esc' now to finish macro...");
 
-// Query to retrieve stack of reconstructed slices and post-process
+// Query to retrieve the stack of reconstructed slices and post-process
 query = getBoolean("Retrieve stack of slices and post-process?");
 if (query == true) {
 run("Image Sequence..."); // allows opening of the sequence of slices
