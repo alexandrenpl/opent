@@ -37,8 +37,7 @@ OpenT is a project designed to facilitate optical projection tomography (OPT) re
 - **nRecon**: Optional, for enhanced reconstruction features.
 
 ## **Contributors**
-- Gabriel Martins
-- Alexandre Lopes
+- Gabriel Martins and Alexandre Lopes
 
 ## **License**
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
