@@ -41,7 +41,7 @@ run("Synchronize Windows");
 //doCommand("Start Animation [\\]");
 //run("Tile");
 //beep();
-//waitForUser("Please check if the sinogram is OK.\nIf it's not, consider re-acquiring the sample");
+//waitForUser("Please check if the sinogram is OK (CTRL+SHIFT+H).\nIf it's not, consider re-acquiring the sample");
 //close(resl);
 //run("Collect Garbage"); //clears RAM
 waitForUser("Check synogram");
@@ -50,7 +50,7 @@ waitForUser("Check synogram");
 // selects pixels on a frame at the edge of image to estimate background, set as background gray level 
 run("Select All"); run("Enlarge...", "enlarge=-5"); run("Make Inverse");
 getStatistics(area, mean);
-setBackgroundColgithub.com/fijigithub.com/fijior(mean, mean, mean);
+setBackgroundColor(mean, mean, mean);
 ThBright = mean/50;  // these values might need to be adjusted for each camera...
 ThDark = mean/20;    // these values might need to be adjusted for each camera...
 run("Select None");
@@ -123,7 +123,7 @@ if (tilt < 0) {
 		print("Check camera or motor axis tilt!!! \nThe tilt was corrected for this projection dataset");
 	};
 };
-print("Tilt degithub.com/fijiviation: "+difference);
+print("Tilt deviation: "+difference);
 run("Select None");
 
 selectWindow(title);
@@ -163,7 +163,7 @@ beep();
 waitForUser("Synchronize All! \nAdjust FOV bounding box to projection image(s). \nMove side handles until top/bottom handles coincide with axis of symmetry \nThen CTL+clik side handles to enlarge box symmetrically");
 // resetting the display is not working...
 resetMinAndMax(); 
-title = getTitle();
+
 roiManager("Add");
 roiManager("Select", 1);
 roiManager("Rename", "CropBox");
